@@ -168,7 +168,21 @@ private fun LyricsLines(model: AriaModel, lyrics: Lyrics, large: Boolean) {
         LazyColumn(
             state = state,
             contentPadding = PaddingValues(start = if (large) 8.dp else 20.dp, end = 20.dp, top = 24.dp, bottom = 320.dp),
-            modifier = Modifier.fillMaxSize().pointerInput(Unit) {
+            modifier = Modifier.fillMaxSize()
+                .graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
+                .drawWithContent {
+                    drawContent()
+                    drawRect(
+                        androidx.compose.ui.graphics.Brush.verticalGradient(
+                            0f to Color.Transparent,
+                            0.1f to Color.Black,
+                            0.85f to Color.Black,
+                            1f to Color.Transparent,
+                        ),
+                        blendMode = androidx.compose.ui.graphics.BlendMode.DstIn,
+                    )
+                }
+                .pointerInput(Unit) {
                 awaitPointerEventScope {
                     while (true) {
                         val event = awaitPointerEvent()

@@ -48,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BitmapPainter
@@ -185,13 +186,18 @@ internal fun Shell(model: AriaModel, searchFocus: FocusRequester) {
             val compact = maxWidth < 980.dp
             val wideEnoughForPanel = maxWidth >= 1120.dp
             val panelOpen = model.settings.sidePanel != SidePanel.HIDDEN
+            LaunchedEffect(wideEnoughForPanel) { model.wideLayout = wideEnoughForPanel }
             Row(Modifier.fillMaxSize()) {
                 Sidebar(model, compact)
                 Box(Modifier.weight(1f).fillMaxHeight()) {
-                    if (panelOpen && !wideEnoughForPanel && !model.nowPlayingOpen) {
-                        SidePanelView(model, Modifier.fillMaxSize())
-                    } else {
-                        Content(model, searchFocus)
+                    Content(model, searchFocus)
+                    if (panelOpen && !wideEnoughForPanel && model.panelOverlay && !model.nowPlayingOpen) {
+                        Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.35f)).clickable(interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, indication = null) { model.panelOverlay = false })
+                        SidePanelView(
+                            model,
+                            Modifier.align(Alignment.CenterEnd).width(minOf(380.dp, maxWidth * 0.6f)).fillMaxHeight().shadow(24.dp),
+                            onClose = { model.panelOverlay = false },
+                        )
                     }
                     SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(16.dp))
                 }
@@ -201,7 +207,7 @@ internal fun Shell(model: AriaModel, searchFocus: FocusRequester) {
                 }
             }
         }
-        PlayerBar(model)
+        if (!model.nowPlayingOpen) PlayerBar(model)
     }
 }
 
@@ -269,7 +275,7 @@ private fun Sidebar(model: AriaModel, compact: Boolean) {
     ) {
         Row(Modifier.padding(start = if (compact) 6.dp else 8.dp, bottom = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             appIcon?.let { androidx.compose.foundation.Image(it, null, modifier = Modifier.size(32.dp)) }
-            if (!compact) Text("Aria", fontWeight = FontWeight.Black, fontSize = 22.sp, modifier = Modifier.padding(start = 10.dp))
+            if (!compact) Text("Aria", fontWeight = FontWeight.Bold, fontSize = 22.sp, letterSpacing = 0.5.sp, modifier = Modifier.padding(start = 10.dp))
         }
         NavItem(Icons.Filled.Home, "Главная", model.screen == Screen.Home && !model.nowPlayingOpen, compact) { model.root(Screen.Home) }
         NavItem(Icons.Filled.Search, "Поиск", model.screen == Screen.Search && !model.nowPlayingOpen, compact) { model.root(Screen.Search) }

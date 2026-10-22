@@ -111,8 +111,9 @@ fun TrackRow(
                         )
                         if (track.explicit) {
                             Box(
-                                Modifier.padding(start = 6.dp).clip(RoundedCornerShape(3.dp)).background(SoftText.copy(alpha = 0.3f)).padding(horizontal = 4.dp),
-                            ) { Text("E", fontSize = 9.sp, fontWeight = FontWeight.Black) }
+                                Modifier.padding(start = 6.dp).size(15.dp).clip(RoundedCornerShape(3.dp)).background(SoftText.copy(alpha = 0.35f)),
+                                contentAlignment = Alignment.Center,
+                            ) { Text("E", fontSize = 9.sp, lineHeight = 9.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.surface) }
                         }
                     }
                     LinkText(track.artist, onClick = { model.openArtist(track) })

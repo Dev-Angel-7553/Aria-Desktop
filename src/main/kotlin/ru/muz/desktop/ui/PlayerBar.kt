@@ -100,10 +100,14 @@ fun PlayerBar(model: AriaModel) {
             Row(Modifier.weight(if (compact) 0.8f else 1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
                 val panel = model.settings.sidePanel
                 RoundIcon(Icons.Filled.Lyrics, "Текст песни", active = panel == SidePanel.LYRICS) {
-                    model.updateSettings { it.copy(sidePanel = if (it.sidePanel == SidePanel.LYRICS) SidePanel.HIDDEN else SidePanel.LYRICS) }
+                    val show = panel != SidePanel.LYRICS || (!model.wideLayout && !model.panelOverlay)
+                    model.panelOverlay = show
+                    model.updateSettings { it.copy(sidePanel = if (show) SidePanel.LYRICS else SidePanel.HIDDEN) }
                 }
                 RoundIcon(Icons.Filled.QueueMusic, "Очередь", active = panel == SidePanel.QUEUE) {
-                    model.updateSettings { it.copy(sidePanel = if (it.sidePanel == SidePanel.QUEUE) SidePanel.HIDDEN else SidePanel.QUEUE) }
+                    val show = panel != SidePanel.QUEUE || (!model.wideLayout && !model.panelOverlay)
+                    model.panelOverlay = show
+                    model.updateSettings { it.copy(sidePanel = if (show) SidePanel.QUEUE else SidePanel.HIDDEN) }
                 }
                 if (!compact) {
                     Volume(model, s)
@@ -191,7 +195,7 @@ fun PlayButton(playing: Boolean, loading: Boolean, size: androidx.compose.ui.uni
 }
 
 @Composable
-private fun Volume(model: AriaModel, s: PlayerSnapshot) {
+internal fun Volume(model: AriaModel, s: PlayerSnapshot) {
     val icon = when {
         s.muted || s.volume == 0f -> Icons.Filled.VolumeOff
         s.volume < 0.5f -> Icons.Filled.VolumeDown

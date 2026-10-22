@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -151,7 +152,7 @@ private fun Header(model: AriaModel, info: PageInfo, page: TrackPage, screen: Sc
             if (screen == Screen.Liked) {
                 Box(
                     Modifier.size(200.dp).shadow(24.dp, RoundedCornerShape(16.dp)).clip(RoundedCornerShape(16.dp))
-                        .background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.4f), Color(0xFF241433)))),
+                        .background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.45f).compositeOver(Color(0xFF241433)), Color(0xFF241433)))),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(Icons.Filled.Favorite, null, tint = Color.White, modifier = Modifier.size(84.dp))

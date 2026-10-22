@@ -122,6 +122,8 @@ class AriaModel(val scope: CoroutineScope) {
     var update by mutableStateOf<DesktopRelease?>(null)
         private set
     var nowPlayingOpen by mutableStateOf(false)
+    var panelOverlay by mutableStateOf(false)
+    var wideLayout by mutableStateOf(true)
 
     private val messageFlow = MutableSharedFlow<String>(extraBufferCapacity = 8)
     val messages: SharedFlow<String> = messageFlow

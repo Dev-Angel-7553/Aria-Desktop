@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -51,7 +52,7 @@ fun NowPlaying(model: AriaModel) {
     var showQueue by remember { mutableStateOf(false) }
     val background = rememberImage(track?.coverUrl, 300)
     val base = MaterialTheme.colorScheme.background
-    Box(Modifier.fillMaxSize().background(base)) {
+    Box(Modifier.fillMaxSize().clipToBounds().background(base)) {
         if (background != null) {
             Image(
                 background,
@@ -87,6 +88,7 @@ fun NowPlaying(model: AriaModel) {
                         }
                     }
                     Transport(model, s, Modifier.widthIn(max = coverSize + 40.dp).fillMaxWidth().padding(top = 18.dp), large = true)
+                    Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) { Volume(model, s) }
                     if (s.message.isNotBlank()) Text(s.message, color = MaterialTheme.colorScheme.error, fontSize = 13.sp, modifier = Modifier.padding(top = 8.dp))
                 }
                 if (wide) {

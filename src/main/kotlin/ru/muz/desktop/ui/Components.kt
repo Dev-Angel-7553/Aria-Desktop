@@ -305,8 +305,8 @@ fun Pill(text: String, icon: ImageVector? = null, primary: Boolean = false, modi
     val (source, hovered) = rememberHover()
     val bg = when {
         primary -> if (hovered) Accent.copy(alpha = 0.9f) else Accent
-        hovered -> MaterialTheme.colorScheme.surfaceContainerHighest
-        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+        hovered -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f)
+        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
     }
     val fg = if (primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
     Row(
@@ -315,6 +315,7 @@ fun Pill(text: String, icon: ImageVector? = null, primary: Boolean = false, modi
             .clickable(interactionSource = source, indication = null, onClick = onClick)
             .padding(horizontal = if (icon != null) 16.dp else 20.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
     ) {
         if (icon != null) {
             Icon(icon, null, tint = fg, modifier = Modifier.size(18.dp))
