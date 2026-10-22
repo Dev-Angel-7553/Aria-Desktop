@@ -185,6 +185,7 @@ internal fun Shell(model: AriaModel, searchFocus: FocusRequester) {
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
             val compact = maxWidth < 980.dp
             val wideEnoughForPanel = maxWidth >= 1120.dp
+            val overlayWidth = minOf(380.dp, maxWidth * 0.6f)
             val panelOpen = model.settings.sidePanel != SidePanel.HIDDEN
             LaunchedEffect(wideEnoughForPanel) { model.wideLayout = wideEnoughForPanel }
             Row(Modifier.fillMaxSize()) {
@@ -195,7 +196,7 @@ internal fun Shell(model: AriaModel, searchFocus: FocusRequester) {
                         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.35f)).clickable(interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, indication = null) { model.panelOverlay = false })
                         SidePanelView(
                             model,
-                            Modifier.align(Alignment.CenterEnd).width(minOf(380.dp, maxWidth * 0.6f)).fillMaxHeight().shadow(24.dp),
+                            Modifier.align(Alignment.CenterEnd).width(overlayWidth).fillMaxHeight().shadow(24.dp),
                             onClose = { model.panelOverlay = false },
                         )
                     }
