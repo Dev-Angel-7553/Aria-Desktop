@@ -64,7 +64,7 @@ fun PlayerBar(model: AriaModel) {
     val s by model.player.state.collectAsState()
     val track = s.current
     BoxWithConstraints(
-        Modifier.fillMaxWidth().height(84.dp).background(MaterialTheme.colorScheme.surfaceContainerLow).padding(horizontal = 16.dp),
+        Modifier.fillMaxWidth().height(84.dp).background(MaterialTheme.colorScheme.surfaceContainerLow).padding(horizontal = 20.dp),
     ) {
         val compact = maxWidth < 860.dp
         Row(Modifier.fillMaxWidth().fillMaxHeight(), verticalAlignment = Alignment.CenterVertically) {
@@ -170,8 +170,8 @@ fun PlayButton(playing: Boolean, loading: Boolean, size: androidx.compose.ui.uni
     val (source, hovered) = rememberHover()
     Tip(if (playing) "Пауза (пробел)" else "Играть (пробел)") {
         Box(
-            Modifier.size(size).scale(if (hovered && enabled) 1.06f else 1f).clip(CircleShape)
-                .background(if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
+            Modifier.size(size).clip(CircleShape)
+                .background(if (!enabled) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f) else if (hovered) Accent else MaterialTheme.colorScheme.onSurface)
                 .hoverable(source)
                 .pointerHoverIcon(PointerIcon.Hand)
                 .clickable(enabled = enabled, interactionSource = source, indication = null, onClick = onClick),

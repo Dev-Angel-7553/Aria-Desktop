@@ -127,7 +127,17 @@ fun LyricsView(model: AriaModel, large: Boolean) {
     val track = model.player.state.collectAsState().value.current
     when {
         track == null -> EmptyState(Icons.Filled.Lyrics, "Ничего не играет", "Включите трек, и здесь появится текст")
-        model.lyricsState == LyricsState.LOADING -> Loading(text = model.lyricsStage.ifBlank { "Ищем текст…" })
+        model.lyricsState == LyricsState.LOADING -> {
+            var slow by remember(track.id) { mutableStateOf(false) }
+            LaunchedEffect(track.id) {
+                delay(6_000)
+                slow = true
+            }
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Loading(text = model.lyricsStage.ifBlank { "Ищем текст…" })
+                if (slow) Pill("Искать заново", Icons.Filled.Refresh) { model.loadLyrics(track, refresh = true) }
+            }
+        }
         model.lyricsState == LyricsState.MISSING || model.lyrics == null -> EmptyState(
             Icons.Filled.Lyrics,
             "Текста нет",
@@ -167,7 +177,7 @@ private fun LyricsLines(model: AriaModel, lyrics: Lyrics, large: Boolean) {
         }
         LazyColumn(
             state = state,
-            contentPadding = PaddingValues(start = if (large) 8.dp else 20.dp, end = 20.dp, top = 24.dp, bottom = 320.dp),
+            contentPadding = PaddingValues(start = if (large) 0.dp else 16.dp, end = 16.dp, top = 40.dp, bottom = 320.dp),
             modifier = Modifier.fillMaxSize()
                 .graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
                 .drawWithContent {

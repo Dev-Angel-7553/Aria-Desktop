@@ -26,7 +26,6 @@ import ru.muz.desktop.audio.AudioCache
 import ru.muz.desktop.ui.Images
 import ru.muz.export.PlaylistCsv
 import ru.muz.lyrics.Lyrics
-import ru.muz.lyrics.LyricsRepository
 import ru.muz.yandex.PlaySource
 import ru.muz.yandex.YandexClient
 
@@ -115,7 +114,7 @@ class AriaModel(val scope: CoroutineScope) {
     var lyricsStage by mutableStateOf("")
         private set
     private var lyricsJob: Job? = null
-    private var lyricsRepo: LyricsRepository? = null
+    private var lyricsRepo: DesktopLyrics? = null
 
     var coverAccent by mutableStateOf<Int?>(null)
         private set
@@ -176,7 +175,7 @@ class AriaModel(val scope: CoroutineScope) {
             client = api
             account = info
             player.client = api
-            lyricsRepo = LyricsRepository(api, http)
+            lyricsRepo = DesktopLyrics(api, http)
             loginBusy = false
             starting = false
             loginMessage = if (info.serviceAvailable) "" else "Подписка Плюс не найдена: часть треков может не играть"
@@ -455,22 +454,42 @@ class AriaModel(val scope: CoroutineScope) {
     }
 
     fun loadLyrics(track: YandexClient.Track, refresh: Boolean = false) {
-        val repo = lyricsRepo ?: return
         lyricsJob?.cancel()
+        val repo = lyricsRepo
+        if (repo == null) {
+            lyrics = null
+            lyricsState = LyricsState.LOADING
+            lyricsStage = "Подключаемся…"
+            return
+        }
+        if (!refresh) {
+            repo.cached(track)?.let {
+                lyrics = it
+                lyricsState = LyricsState.READY
+                prefetchNextLyrics(repo)
+                return
+            }
+        }
         lyrics = null
         lyricsState = LyricsState.LOADING
         lyricsStage = ""
         lyricsJob = scope.launch {
-            repo.load(track, refresh) { stage -> lyricsStage = stage }
-                .onSuccess {
-                    lyrics = it
-                    lyricsState = LyricsState.READY
-                }
-                .onFailure {
-                    lyricsState = LyricsState.MISSING
-                    lyricsStage = it.message ?: "Текста нет"
-                }
+            val result = repo.load(track, refresh) { stage -> lyricsStage = stage }
+            if (player.state.value.current?.id != track.id) return@launch
+            result.onSuccess {
+                lyrics = it
+                lyricsState = LyricsState.READY
+            }.onFailure {
+                lyricsState = LyricsState.MISSING
+                lyricsStage = it.message ?: "Текста нет"
+            }
+            prefetchNextLyrics(repo)
         }
+    }
+
+    private fun prefetchNextLyrics(repo: DesktopLyrics) {
+        val s = player.state.value
+        s.queue.getOrNull(s.index + 1)?.let(repo::prefetch)
     }
 
     fun checkUpdates(silent: Boolean) {

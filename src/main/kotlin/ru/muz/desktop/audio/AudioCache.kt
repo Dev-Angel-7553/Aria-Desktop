@@ -31,7 +31,10 @@ class AudioCache(private val dir: File, private val http: OkHttpClient, var limi
 
     fun start(trackId: String, url: String, onComplete: () -> Unit = {}): Download {
         marker(trackId).delete()
-        val download = Download(trackId, file(trackId), http)
+        val target = file(trackId)
+        target.parentFile?.mkdirs()
+        runCatching { target.outputStream().close() }
+        val download = Download(trackId, target, http)
         download.begin(url) {
             marker(trackId).writeText("ok")
             trim(setOf(trackId))
@@ -44,12 +47,15 @@ class AudioCache(private val dir: File, private val http: OkHttpClient, var limi
 
     fun clear(keep: Set<String> = emptySet()) {
         val kept = keep.map(::safe).toSet()
-        dir.listFiles().orEmpty().filter { it.nameWithoutExtension !in kept }.forEach { it.delete() }
+        dir.listFiles().orEmpty()
+            .filter { it.nameWithoutExtension !in kept && it.lastModified() < System.currentTimeMillis() - 60_000L }
+            .forEach { it.delete() }
     }
 
     fun trim(keep: Set<String> = emptySet()) {
         val kept = keep.map(::safe).toSet()
-        val files = dir.listFiles().orEmpty().filter { it.extension == "mp3" }
+        val fresh = System.currentTimeMillis() - 30 * 60_000L
+        val files = dir.listFiles().orEmpty().filter { it.extension == "mp3" && it.lastModified() < fresh }
         var total = files.sumOf { it.length() }
         if (total <= limitBytes) return
         files.filter { it.nameWithoutExtension !in kept }.sortedBy { it.lastModified() }.forEach { file ->
@@ -160,7 +166,7 @@ class Download internal constructor(
 }
 
 private class GrowingInput(private val download: Download, start: Long) : InputStream() {
-    private val raf = RandomAccessFile(download.file, "r")
+    private var raf: RandomAccessFile? = null
     private var position = start
     @Volatile private var closed = false
 
@@ -174,14 +180,17 @@ private class GrowingInput(private val download: Download, start: Long) : InputS
         if (len == 0) return 0
         while (!closed) {
             val available = download.written - position
-            if (available > 0) {
-                raf.seek(position)
-                val n = raf.read(b, off, minOf(len.toLong(), available).toInt())
+            val file = if (available > 0) handle() else null
+            if (available > 0 && file != null) {
+                file.seek(position)
+                val n = file.read(b, off, minOf(len.toLong(), available).toInt())
                 if (n > 0) {
                     position += n
                     return n
                 }
             }
+            if (available > 0 && file == null && download.file.exists().not()) throw IOException("Файл кэша пропал, загружаем заново")
+            if (available > 0 && file == null && !download.file.exists()) throw IOException("Файл кэша пропал, загружаем заново")
             if (download.finished) return -1
             download.error?.let { throw IOException(it.message ?: "Ошибка загрузки", it) }
             if (download.isCancelled) return -1
@@ -190,8 +199,14 @@ private class GrowingInput(private val download: Download, start: Long) : InputS
         return -1
     }
 
+    private fun handle(): RandomAccessFile? {
+        raf?.let { return it }
+        if (!download.file.exists()) return null
+        return runCatching { RandomAccessFile(download.file, "r") }.getOrNull()?.also { raf = it }
+    }
+
     override fun close() {
         closed = true
-        raf.close()
+        runCatching { raf?.close() }
     }
 }

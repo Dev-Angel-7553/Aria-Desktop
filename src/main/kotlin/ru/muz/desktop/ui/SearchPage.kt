@@ -91,7 +91,7 @@ fun SearchPage(model: AriaModel, focus: FocusRequester) {
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
     val s by model.player.state.collectAsState()
     val r = model.results
-    LazyColumn(contentPadding = PaddingValues(horizontal = 32.dp, vertical = 24.dp), modifier = Modifier.fillMaxSize()) {
+    LazyColumn(contentPadding = PaddingValues(start = 32.dp, end = 32.dp, top = 4.dp, bottom = 32.dp), modifier = Modifier.fillMaxSize()) {
         item {
             Text("Поиск", style = MaterialTheme.typography.headlineLarge)
             Spacer(Modifier.height(16.dp))
@@ -178,10 +178,10 @@ private fun Tile(title: String, icon: androidx.compose.ui.graphics.vector.ImageV
 @Composable
 fun CollectionPage(model: AriaModel) {
     var tab by remember { mutableStateOf(0) }
-    LazyColumn(contentPadding = PaddingValues(horizontal = 32.dp, vertical = 24.dp), modifier = Modifier.fillMaxSize()) {
+    LazyColumn(contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 32.dp), modifier = Modifier.fillMaxSize()) {
         item {
-            Text("Коллекция", style = MaterialTheme.typography.headlineLarge)
-            Row(Modifier.padding(top = 16.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Коллекция", modifier = Modifier.padding(start = 12.dp), style = MaterialTheme.typography.headlineLarge)
+            Row(Modifier.padding(start = 12.dp, top = 16.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Плейлисты", "Альбомы").forEachIndexed { i, title ->
                     Chip(title, i == tab) { tab = i }
                 }

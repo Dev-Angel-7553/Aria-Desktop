@@ -52,7 +52,7 @@ fun MediaCard(
         horizontalAlignment = if (round) Alignment.CenterHorizontally else Alignment.Start,
     ) {
         Box {
-            Cover(cover, width, shape = shape, modifier = Modifier.shadow(if (hovered) 12.dp else 4.dp, shape), px = 400)
+            Cover(cover, width, shape = shape, modifier = Modifier.shadow(6.dp, shape), px = 400)
             if (onPlay != null && hovered) {
                 Box(Modifier.align(Alignment.BottomEnd).padding(10.dp)) {
                     Box(

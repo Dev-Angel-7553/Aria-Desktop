@@ -66,7 +66,7 @@ import ru.muz.yandex.PlaySource
 @Composable
 fun HomePage(model: AriaModel) {
     val s by model.player.state.collectAsState()
-    LazyColumn(contentPadding = PaddingValues(horizontal = 32.dp, vertical = 28.dp), modifier = Modifier.fillMaxSize()) {
+    LazyColumn(contentPadding = PaddingValues(start = 32.dp, end = 32.dp, top = 4.dp, bottom = 32.dp), modifier = Modifier.fillMaxSize()) {
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(model.greeting(), style = MaterialTheme.typography.headlineLarge, modifier = Modifier.weight(1f))
@@ -189,7 +189,7 @@ private fun WaveCard(model: AriaModel, active: Boolean, modifier: Modifier) {
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    Modifier.size(if (hovered) 60.dp else 56.dp).clip(CircleShape).background(Color.Black.copy(alpha = 0.85f)),
+                    Modifier.size(56.dp).clip(CircleShape).background(Color.Black.copy(alpha = if (hovered) 1f else 0.82f)),
                     contentAlignment = Alignment.Center,
                 ) {
                     if (active) PlayingBars(true, color = accent) else Icon(Icons.Filled.PlayArrow, null, tint = Color.White, modifier = Modifier.size(32.dp))

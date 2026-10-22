@@ -65,7 +65,7 @@ fun SettingsPage(model: AriaModel) {
     LaunchedEffect(refresh) {
         cacheBytes = withContext(Dispatchers.IO) { model.cache.usedBytes() + Images.diskBytes() }
     }
-    LazyColumn(contentPadding = PaddingValues(horizontal = 32.dp, vertical = 24.dp), modifier = Modifier.fillMaxSize()) {
+    LazyColumn(contentPadding = PaddingValues(start = 32.dp, end = 32.dp, top = 4.dp, bottom = 32.dp), modifier = Modifier.fillMaxSize()) {
         item {
             Text("Настройки", style = MaterialTheme.typography.headlineLarge)
         }
@@ -273,7 +273,7 @@ private fun Toggle(title: String, subtitle: String, checked: Boolean, onChange: 
 private fun Swatch(color: Color, selected: Boolean, onClick: () -> Unit) {
     val (source, hovered) = rememberHover()
     Box(
-        Modifier.size(if (hovered) 36.dp else 34.dp).clip(CircleShape).background(color)
+        Modifier.size(34.dp).clip(CircleShape).background(if (hovered && !selected) color.copy(alpha = 0.8f) else color)
             .border(if (selected) 3.dp else 0.dp, if (selected) MaterialTheme.colorScheme.onSurface else Color.Transparent, CircleShape)
             .hoverable(source).pointerHoverIcon(PointerIcon.Hand)
             .clickable(interactionSource = source, indication = null, onClick = onClick),
