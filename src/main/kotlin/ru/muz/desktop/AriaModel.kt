@@ -509,4 +509,51 @@ class AriaModel(val scope: CoroutineScope) {
         settingsStore.save(settings)
         player.close()
     }
+
+    fun loadDemo() {
+        fun cover(i: Int) = "https://picsum.photos/seed/aria$i/600/600"
+        val names = listOf(
+            "Звёзды над городом" to "Полярный свет", "Ночной трамвай" to "Северный ветер", "Не отпускай" to "Мира",
+            "Лето в сердце" to "Тёплый вечер", "Медленно" to "Ника Ли", "Огни" to "Город 312", "Тише" to "Луна",
+            "Последний поезд" to "Вокзал", "Синий" to "Акварель", "Дыши" to "Море внутри", "Снова и снова" to "Эхо",
+            "Неон" to "Полночь", "Танцуй" to "Ритм", "Береги" to "Дом", "Проснись" to "Утро",
+        )
+        val tracks = names.mapIndexed { i, (title, artist) ->
+            YandexClient.Track(
+                id = "${1000 + i}", albumId = "${500 + i}", title = title, artist = artist, album = "Альбом ${i + 1}",
+                durationMs = 150_000L + i * 13_000L, coverUrl = cover(i), explicit = i % 5 == 2, lyricsAvailable = true, artistId = "${70 + i}",
+            )
+        }
+        val api = YandexClient("demo-token-0000000000000000", http)
+        client = api
+        account = YandexClient.Account("1", "aria.demo", "Ангелина", true)
+        liked = tracks
+        likedIds = tracks.take(6).map { it.id }.toSet()
+        playlists = (0 until 7).map { i ->
+            YandexClient.Playlist("$i", "1", "${3 + i}", "", listOf("В дорогу", "Вечер", "Спокойное", "Для работы", "Тренировка", "Ночь", "Любимое")[i], "", cover(40 + i), 20 + i * 7, "")
+        }
+        personal = (0 until 4).map { i ->
+            YandexClient.Playlist("p$i", "yamusic", "${90 + i}", "", listOf("Плейлист дня", "Дежавю", "Премьера", "Тайник")[i], "Каждый день новое", cover(60 + i), 30, "daily")
+        }
+        albums = (0 until 6).map { i -> YandexClient.Album("${500 + i}", "Альбом ${i + 1}", names[i].second, cover(80 + i), 10) }
+        chart = tracks.reversed()
+        starting = false
+        lyrics = ru.muz.lyrics.LrcParser.parse(
+            listOf(
+                "[00:10.00]Звёзды над городом тихо горят",
+                "[00:14.00]Мы не спешим никуда",
+                "[00:18.00]Ветер уносит слова наугад",
+                "[00:22.00]Но остаётся вода",
+                "[00:26.00]Ночь обнимает усталый проспект",
+                "[00:30.00]Свет из окна до утра",
+                "[00:34.00]Если ты рядом, то времени нет",
+                "[00:38.00]Только сегодня, вчера",
+                "[00:42.00]Звёзды над городом",
+                "[00:46.00]Звёзды над нами",
+            ).joinToString("\n"),
+        )
+        lyricsState = LyricsState.READY
+        player.preview(tracks, 0, 31_500, playing = true, source = PlaySource.liked())
+        coverAccent = null
+    }
 }

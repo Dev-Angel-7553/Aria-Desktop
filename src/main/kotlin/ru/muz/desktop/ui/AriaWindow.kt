@@ -172,7 +172,7 @@ private fun shortcut(model: AriaModel, event: KeyEvent, searchFocus: FocusReques
 }
 
 @Composable
-private fun Shell(model: AriaModel, searchFocus: FocusRequester) {
+internal fun Shell(model: AriaModel, searchFocus: FocusRequester) {
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(Unit) {
         model.messages.collect { text ->

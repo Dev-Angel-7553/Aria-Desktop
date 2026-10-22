@@ -78,6 +78,8 @@ compose.desktop {
 
 tasks.test {
     useJUnit()
+    systemProperty("java.awt.headless", "true")
+    System.getenv("ARIA_SCREENS")?.let { environment("ARIA_SCREENS", it) }
 }
 
 tasks.jar {

@@ -115,6 +115,22 @@ class PlayerController(
         onTrackChanged(saved.tracks[saved.index])
     }
 
+    fun preview(tracks: List<YandexClient.Track>, index: Int, positionMs: Long, playing: Boolean, source: PlaySource) {
+        original = tracks
+        pendingStartMs = positionMs
+        snapshot.update {
+            it.copy(
+                queue = tracks,
+                index = index,
+                source = source,
+                status = if (playing) EngineStatus.PLAYING else EngineStatus.PAUSED,
+                positionMs = positionMs,
+                durationMs = tracks[index].durationMs,
+                buffered = 0.7f,
+            )
+        }
+    }
+
     fun playQueue(tracks: List<YandexClient.Track>, index: Int, source: PlaySource) {
         if (tracks.isEmpty()) return
         val start = index.coerceIn(0, tracks.lastIndex)

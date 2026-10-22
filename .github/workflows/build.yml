@@ -39,6 +39,18 @@ jobs:
             echo "::error::${line}"
           done
 
+      - name: Screens
+        if: startsWith(github.ref, 'refs/heads/work/')
+        continue-on-error: true
+        run: |
+          ARIA_SCREENS="$PWD/screens" ./gradlew --no-daemon test --tests ru.muz.desktop.ScreensTest --rerun
+          cd screens
+          git init -q
+          git checkout -q -b screens
+          git add .
+          git -c user.name=ci -c user.email=ci@localhost commit -qm "Screens for ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" screens
+
       - name: Smoke test
         run: |
           version=$(sed -n 's/^version=//p' gradle.properties | tr -d '\r')
