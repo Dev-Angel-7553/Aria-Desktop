@@ -286,14 +286,23 @@ fun EmptyState(icon: ImageVector, title: String, text: String, modifier: Modifie
 @Composable
 fun Loading(modifier: Modifier = Modifier, text: String = "") {
     val transition = rememberInfiniteTransition()
-    val t by transition.animateFloat(0f, 1f, infiniteRepeatable(tween(900), RepeatMode.Restart))
+    val t by transition.animateFloat(0f, 1f, infiniteRepeatable(tween(1100, easing = androidx.compose.animation.core.LinearEasing), RepeatMode.Restart))
     val accent = Accent
     Column(modifier.fillMaxWidth().padding(40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            repeat(4) { i ->
-                val local = ((t + i * 0.18f) % 1f)
-                val k = if (local < 0.5f) local * 2 else (1 - local) * 2
-                Box(Modifier.width(6.dp).height((10 + 22 * k).dp).clip(RoundedCornerShape(3.dp)).background(accent.copy(alpha = 0.5f + 0.5f * k)))
+        Canvas(Modifier.size(width = 42.dp, height = 32.dp)) {
+            val bars = 4
+            val gap = 6.dp.toPx()
+            val bar = (size.width - gap * (bars - 1)) / bars
+            for (i in 0 until bars) {
+                val phase = (t + i * 0.2f) % 1f
+                val k = (kotlin.math.sin(phase * 2 * Math.PI).toFloat() + 1f) / 2f
+                val h = size.height * (0.3f + 0.7f * k)
+                drawRoundRect(
+                    accent.copy(alpha = 0.55f + 0.45f * k),
+                    topLeft = Offset(i * (bar + gap), (size.height - h) / 2f),
+                    size = Size(bar, h),
+                    cornerRadius = CornerRadius(bar / 2f),
+                )
             }
         }
         if (text.isNotBlank()) Text(text, color = SoftText, fontSize = 13.sp, modifier = Modifier.padding(top = 14.dp))
