@@ -42,10 +42,9 @@ val appVersion = version.toString()
 val mainClassName = "ru.muz.desktop.MainKt"
 val javaFeature = 21
 
+val composeVersion = "1.7.3"
 val composeRuntime = when ("$targetOs-$targetArch") {
-    "linux-x64" -> compose.desktop.linux_x64
-    "linux-arm64" -> compose.desktop.linux_arm64
-    "windows-x64" -> compose.desktop.windows_x64
+    "linux-x64", "linux-arm64", "windows-x64" -> "org.jetbrains.compose.desktop:desktop-jvm-$targetOs-$targetArch:$composeVersion"
     else -> throw GradleException("Сборка под $targetOs-$targetArch пока не поддерживается. Можно: linux-x64, linux-arm64, windows-x64")
 }
 
