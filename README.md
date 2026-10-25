@@ -2,95 +2,97 @@
   <img src="src/main/resources/aria.png" width="112" alt="Aria">
 </p>
 
+**English** · [Русский](README.ru.md)
+
 # Aria Desktop
 
-Неофициальный клиент Яндекс Музыки для Linux и Windows. Это версия для компьютера.
-Есть ещё [Aria для Android](https://github.com/Dev-Angel-7553/Aria-Android).
+An unofficial Yandex Music client for Linux and Windows. This is the desktop version.
+There is also [Aria for Android](https://github.com/Dev-Angel-7553/Aria-Android).
 
-## Что есть
+## Features
 
-- главная с «Моей волной», подборками, плейлистами и чартом
-- поиск по трекам, исполнителям, альбомам и плейлистам
-- коллекция: «Мне нравится», плейлисты, альбомы
-- текст песни сбоку или на весь экран, строка заливается по словам
-- очередь, перемешивание, повтор, продолжение с того же места после перезапуска
-- прослушивания засчитываются в Яндексе, волна учится на пропусках
-- кэш прослушанных треков, повторно они играют без загрузки
-- экспорт любого списка в CSV
-- тёмная, чёрная и светлая тема, акцент из обложки, масштаб интерфейса
-- горячие клавиши, список ниже
+- home with My Wave, collections, playlists and the chart
+- search for tracks, artists, albums and playlists
+- collection: Liked, playlists, albums
+- lyrics at the side or fullscreen, the line fills in word by word
+- queue, shuffle, repeat, resuming from the same place after a restart
+- listens are counted by Yandex, the wave learns from skips
+- cache of played tracks, they replay without loading
+- export of any list to CSV
+- dark, black and light themes, accent color from the cover, interface scale
+- hotkeys, see below
 
-Java ставить не нужно, она лежит внутри архива. ffmpeg тоже не нужен.
+Java is not required, it is bundled in the archive. ffmpeg is not needed either.
 
-## Горячие клавиши
+## Hotkeys
 
-| Клавиши | Что делают |
+| Keys | What they do |
 | --- | --- |
-| Пробел | пауза и воспроизведение |
-| Ctrl + → / ← | следующий и предыдущий трек |
-| Shift + → / ← | перемотка на 10 секунд |
-| Ctrl + ↑ / ↓ | громкость |
-| Ctrl + L | «Мне нравится» для текущего трека |
-| Ctrl + F | поиск |
-| Ctrl + Enter | открыть и закрыть экран с текстом |
-| Alt + ← | назад |
-| F11 | полный экран |
-| Esc | выйти из полного экрана или закрыть текст |
+| Space | play and pause |
+| Ctrl + → / ← | next and previous track |
+| Shift + → / ← | seek 10 seconds |
+| Ctrl + ↑ / ↓ | volume |
+| Ctrl + L | like the current track |
+| Ctrl + F | search |
+| Ctrl + Enter | open and close the lyrics screen |
+| Alt + ← | back |
+| F11 | fullscreen |
+| Esc | leave fullscreen or close the lyrics |
 
-## Установка
+## Installation
 
-Архивы лежат в [Releases](../../releases).
+Archives are in [Releases](../../releases).
 
-**Linux.** Скачайте `Aria-<версия>-linux-x64.tar.gz`:
+**Linux.** Download `Aria-<version>-linux-x64.tar.gz`:
 
 ```bash
 tar -xzf Aria-*-linux-x64.tar.gz
 ./aria/install.sh
 ```
 
-Приложение встанет в `~/.local/opt/aria`, появится в меню и командой `aria`.
-Удалить: `~/.local/opt/aria/uninstall.sh`, вместе с настройками: `--purge`.
-Можно и без установки: `./aria/bin/aria`.
+The app is installed to `~/.local/opt/aria` and appears in the menu and as the `aria` command.
+Uninstall: `~/.local/opt/aria/uninstall.sh`, together with the settings: `--purge`.
+It can also run without installing: `./aria/bin/aria`.
 
-**Windows.** Скачайте `Aria-<версия>-windows-x64.zip`, распакуйте куда удобно и запустите `Aria.exe`.
-Если что-то не стартует, `aria-debug.cmd` откроет окно с логом.
+**Windows.** Download `Aria-<version>-windows-x64.zip`, unpack it anywhere and run `Aria.exe`.
+If something fails to start, `aria-debug.cmd` opens a window with the log.
 
-## Вход
+## Signing in
 
-Нужен OAuth-токен Яндекс Музыки. На экране входа расписано по шагам, как его получить:
-открываете страницу Яндекса, входите, копируете адрес и вставляете в приложение.
+You need a Yandex Music OAuth token. The login screen explains step by step how to get it:
+open the Yandex page, sign in, copy the address and paste it into the app.
 
-Токен хранится в `~/.config/aria/session` (на Windows `%APPDATA%\Aria\session`),
-файл доступен только вашему пользователю. Отправляется он только в Яндекс.
+The token is stored in `~/.config/aria/session` (on Windows `%APPDATA%\Aria\session`),
+the file is readable only by your user. It is sent only to Yandex.
 
-## Сборка
+## Build
 
-Нужен JDK 17 или новее.
+You need JDK 17 or newer.
 
 ```bash
-./gradlew run                      # запустить
-./gradlew dist                     # архив под текущую систему
-./gradlew dist -Ptarget=linux      # архив под Linux
-./gradlew dist -Ptarget=windows    # архив под Windows
+./gradlew run                      # run
+./gradlew dist                     # archive for the current system
+./gradlew dist -Ptarget=linux      # archive for Linux
+./gradlew dist -Ptarget=windows    # archive for Windows
 ```
 
-На Windows то же самое через `gradlew.bat`. Архивы появляются в `build/dist/`.
+On Windows the same works through `gradlew.bat`. Archives appear in `build/dist/`.
 
-Под другую систему можно собирать откуда угодно: Gradle сам скачает нужную Java
-(Temurin 21) и положит её в архив. При первой сборке под Windows с Linux он ещё
-один раз скачивает JDK для Windows, чтобы взять из него запускатор `Aria.exe`.
-Всё скачанное кэшируется в `~/.gradle/caches/aria-desktop`.
+You can build for another system from anywhere: Gradle downloads the right Java
+(Temurin 21) itself and puts it in the archive. The first Windows build from Linux also
+downloads a Windows JDK once, to take the `Aria.exe` launcher from it.
+Everything downloaded is cached in `~/.gradle/caches/aria-desktop`.
 
-Есть ещё `-Parch=arm64` для Linux на ARM.
+There is also `-Parch=arm64` for Linux on ARM.
 
-Каждый пуш в `main` собирается в GitHub Actions на Linux и Windows и выкладывается
-в релиз `v<version>` из `gradle.properties`.
+Every push to `main` is built in GitHub Actions on Linux and Windows and published
+as release `v<version>` from `gradle.properties`.
 
-## Стек
+## Stack
 
-Kotlin, Compose Multiplatform, Material 3, OkHttp, kotlinx.serialization, JLayer для MP3.
+Kotlin, Compose Multiplatform, Material 3, OkHttp, kotlinx.serialization, JLayer for MP3.
 
-## Дисклеймер
+## Disclaimer
 
-Проект не связан с Яндексом. API Яндекс Музыки неофициальное и может поменяться в любой момент.
-Для музыки нужна своя подписка Яндекс Плюс.
+The project is not affiliated with Yandex. The Yandex Music API is unofficial and may change at any moment.
+You need your own Yandex Plus subscription for the music.
