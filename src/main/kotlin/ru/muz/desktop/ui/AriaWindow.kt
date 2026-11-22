@@ -183,10 +183,10 @@ internal fun Shell(model: AriaModel, searchFocus: FocusRequester) {
     }
     Column(Modifier.fillMaxSize()) {
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-            val compact = maxWidth < 980.dp
+            val compact = maxWidth < 980.dp || !model.settings.showNavigationLabels
             val wideEnoughForPanel = maxWidth >= 1120.dp
             val overlayWidth = minOf(380.dp, maxWidth * 0.6f)
-            val panelOpen = model.settings.sidePanel != SidePanel.HIDDEN
+            val panelOpen = model.screen != Screen.Settings && model.settings.sidePanel != SidePanel.HIDDEN
             LaunchedEffect(wideEnoughForPanel) { model.wideLayout = wideEnoughForPanel }
             Row(Modifier.fillMaxSize()) {
                 Sidebar(model, compact)

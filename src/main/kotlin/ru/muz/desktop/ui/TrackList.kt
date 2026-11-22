@@ -64,6 +64,7 @@ fun TrackRow(
 ) {
     val (source, hovered) = rememberHover()
     val liked = model.isLiked(track)
+    val compact = model.settings.compactLists
     ContextMenuArea(items = {
         listOf(
             ContextMenuItem("Играть") { onPlay() },
@@ -76,7 +77,7 @@ fun TrackRow(
         )
     }) {
         Row(
-            Modifier.fillMaxWidth().height(56.dp).clip(RoundedCornerShape(10.dp))
+            Modifier.fillMaxWidth().height(if (compact) 44.dp else 56.dp).clip(RoundedCornerShape(10.dp))
                 .background(
                     when {
                         current -> Accent.copy(alpha = 0.12f)
@@ -97,7 +98,7 @@ fun TrackRow(
                 }
             }
             Row(Modifier.weight(1.4f), verticalAlignment = Alignment.CenterVertically) {
-                Cover(track.coverUrl, 42.dp, modifier = Modifier.padding(start = 6.dp), px = 100)
+                Cover(track.coverUrl, if (compact) 34.dp else 42.dp, modifier = Modifier.padding(start = 6.dp), px = 100)
                 Column(Modifier.padding(start = 12.dp, end = 12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(

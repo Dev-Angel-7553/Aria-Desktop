@@ -2,6 +2,7 @@ package ru.muz.desktop
 
 import java.io.File
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -10,8 +11,16 @@ import kotlinx.serialization.json.floatOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 enum class ThemeMode(val title: String) { DARK("Тёмная"), AMOLED("Чёрная"), LIGHT("Светлая"), SYSTEM("Как в системе") }
+
+enum class HomeSection(val title: String) {
+    QUICK_PLAY("Моя волна и Мне нравится"),
+    PLAYLISTS("Ваши плейлисты"),
+    ALBUMS("Любимые альбомы"),
+    CHART("Чарт"),
+}
 
 enum class SidePanel { LYRICS, QUEUE, HIDDEN }
 
@@ -33,6 +42,13 @@ data class DesktopSettings(
     val autoUpdates: Boolean = true,
     val uiScale: Int = 100,
     val resumePlayback: Boolean = true,
+    val homeSections: List<HomeSection> = HomeSection.entries.toList(),
+    val compactLists: Boolean = false,
+    val showNavigationLabels: Boolean = true,
+    val animateWave: Boolean = true,
+    val centerLyrics: Boolean = false,
+    val lyricsAutoScroll: Boolean = true,
+    val lyricsTapToSeek: Boolean = true,
     val windowWidth: Int = 1280,
     val windowHeight: Int = 820,
     val windowX: Int = Int.MIN_VALUE,
@@ -80,6 +96,13 @@ class SettingsStore(private val file: File = File(AppDirs.config, "settings.json
             put("autoUpdates", s.autoUpdates)
             put("uiScale", s.uiScale)
             put("resumePlayback", s.resumePlayback)
+            putJsonArray("homeSections") { s.homeSections.forEach { add(JsonPrimitive(it.name)) } }
+            put("compactLists", s.compactLists)
+            put("showNavigationLabels", s.showNavigationLabels)
+            put("animateWave", s.animateWave)
+            put("centerLyrics", s.centerLyrics)
+            put("lyricsAutoScroll", s.lyricsAutoScroll)
+            put("lyricsTapToSeek", s.lyricsTapToSeek)
             put("windowWidth", s.windowWidth)
             put("windowHeight", s.windowHeight)
             put("windowX", s.windowX)
@@ -109,6 +132,16 @@ class SettingsStore(private val file: File = File(AppDirs.config, "settings.json
                 autoUpdates = bool("autoUpdates", d.autoUpdates),
                 uiScale = int("uiScale", d.uiScale).coerceIn(75, 200),
                 resumePlayback = bool("resumePlayback", d.resumePlayback),
+                homeSections = (o["homeSections"] as? JsonArray)?.mapNotNull { item ->
+                    val name = (item as? JsonPrimitive)?.content
+                    HomeSection.entries.firstOrNull { it.name == name }
+                }?.distinct() ?: d.homeSections,
+                compactLists = bool("compactLists", d.compactLists),
+                showNavigationLabels = bool("showNavigationLabels", d.showNavigationLabels),
+                animateWave = bool("animateWave", d.animateWave),
+                centerLyrics = bool("centerLyrics", d.centerLyrics),
+                lyricsAutoScroll = bool("lyricsAutoScroll", d.lyricsAutoScroll),
+                lyricsTapToSeek = bool("lyricsTapToSeek", d.lyricsTapToSeek),
                 windowWidth = int("windowWidth", d.windowWidth).coerceAtLeast(640),
                 windowHeight = int("windowHeight", d.windowHeight).coerceAtLeast(480),
                 windowX = int("windowX", d.windowX),

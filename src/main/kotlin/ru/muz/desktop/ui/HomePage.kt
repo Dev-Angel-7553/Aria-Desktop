@@ -58,6 +58,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import ru.muz.desktop.AriaModel
+import ru.muz.desktop.HomeSection
 import ru.muz.desktop.Screen
 import ru.muz.text.playlistsLabel
 import ru.muz.text.tracksLabel
@@ -78,61 +79,74 @@ fun HomePage(model: AriaModel) {
                     Text(model.libraryError, color = MaterialTheme.colorScheme.error, fontSize = 13.sp, modifier = Modifier.padding(start = 8.dp))
                 }
             }
-            Spacer(Modifier.height(20.dp))
-            BoxWithConstraints(Modifier.fillMaxWidth()) {
-                val wide = maxWidth > 760.dp
-                if (wide) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        WaveCard(model, s.source.wave && s.isPlaying, Modifier.weight(1.6f))
-                        LikedCard(model, Modifier.weight(1f))
-                    }
-                } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        WaveCard(model, s.source.wave && s.isPlaying, Modifier.fillMaxWidth())
-                        LikedCard(model, Modifier.fillMaxWidth())
-                    }
-                }
-            }
         }
-        if (model.playlists.isNotEmpty()) {
-            item {
-                SectionHeader("Ваши плейлисты", action = "Все") { model.root(Screen.Collection) }
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    items(model.playlists) { p ->
-                        MediaCard(p.title, tracksLabel(p.trackCount), p.coverUrl, onPlay = { model.playScreen(Screen.Playlist(p)) }) {
-                            model.navigate(Screen.Playlist(p))
+        val sections = model.settings.homeSections
+        sections.forEach { section ->
+            when (section) {
+                HomeSection.QUICK_PLAY -> item(key = section.name) {
+                    Spacer(Modifier.height(20.dp))
+                    BoxWithConstraints(Modifier.fillMaxWidth()) {
+                        val wide = maxWidth > 760.dp
+                        if (wide) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                WaveCard(model, s.source.wave && s.isPlaying, Modifier.weight(1.6f))
+                                LikedCard(model, Modifier.weight(1f))
+                            }
+                        } else {
+                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                WaveCard(model, s.source.wave && s.isPlaying, Modifier.fillMaxWidth())
+                                LikedCard(model, Modifier.fillMaxWidth())
+                            }
                         }
                     }
                 }
-            }
-        }
-        if (model.chart.isNotEmpty()) {
-            item {
-                SectionHeader("Чарт", action = "Весь чарт") { model.navigate(Screen.Chart) }
-            }
-            itemsIndexed(model.chart.take(10)) { index, track ->
-                TrackRow(
-                    model = model,
-                    track = track,
-                    number = index + 1,
-                    showAlbum = true,
-                    current = s.current?.id == track.id,
-                    playing = s.isPlaying,
-                ) { model.play(model.chart, index, PlaySource.chart()) }
-            }
-        }
-        if (model.libraryLoading && model.liked.isEmpty()) {
-            item { Loading(text = "Загружаем вашу музыку…") }
-        }
-        if (model.albums.isNotEmpty()) {
-            item {
-                SectionHeader("Любимые альбомы")
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    items(model.albums) { a ->
-                        MediaCard(a.title, a.artist, a.coverUrl) { model.navigate(Screen.Album(a)) }
+                HomeSection.PLAYLISTS -> if (model.playlists.isNotEmpty()) {
+                    item(key = section.name) {
+                        SectionHeader("Ваши плейлисты", action = "Все") { model.root(Screen.Collection) }
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            items(model.playlists) { p ->
+                                MediaCard(p.title, tracksLabel(p.trackCount), p.coverUrl, onPlay = { model.playScreen(Screen.Playlist(p)) }) {
+                                    model.navigate(Screen.Playlist(p))
+                                }
+                            }
+                        }
+                    }
+                }
+                HomeSection.ALBUMS -> if (model.albums.isNotEmpty()) {
+                    item(key = section.name) {
+                        SectionHeader("Любимые альбомы")
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            items(model.albums) { a ->
+                                MediaCard(a.title, a.artist, a.coverUrl) { model.navigate(Screen.Album(a)) }
+                            }
+                        }
+                    }
+                }
+                HomeSection.CHART -> if (model.chart.isNotEmpty()) {
+                    item(key = section.name) {
+                        SectionHeader("Чарт", action = "Весь чарт") { model.navigate(Screen.Chart) }
+                    }
+                    itemsIndexed(model.chart.take(10), key = { index, track -> "chart-$index-${track.id}" }) { index, track ->
+                        TrackRow(
+                            model = model,
+                            track = track,
+                            number = index + 1,
+                            showAlbum = true,
+                            current = s.current?.id == track.id,
+                            playing = s.isPlaying,
+                        ) { model.play(model.chart, index, PlaySource.chart()) }
                     }
                 }
             }
+        }
+        if (sections.isEmpty()) {
+            item {
+                Spacer(Modifier.height(20.dp))
+                Pill("Настроить главную") { model.root(Screen.Settings) }
+            }
+        }
+        if (model.libraryLoading && sections.isNotEmpty() && model.liked.isEmpty()) {
+            item { Loading(text = "Загружаем вашу музыку…") }
         }
         item { Spacer(Modifier.height(24.dp)) }
     }
@@ -141,12 +155,14 @@ fun HomePage(model: AriaModel) {
 @Composable
 private fun WaveCard(model: AriaModel, active: Boolean, modifier: Modifier) {
     val accent = Accent
-    val transition = rememberInfiniteTransition()
-    val phase by transition.animateFloat(0f, 1f, infiniteRepeatable(tween(if (active) 6000 else 14000, easing = LinearEasing), RepeatMode.Restart))
+    val phase = if (model.settings.animateWave) {
+        val transition = rememberInfiniteTransition()
+        transition.animateFloat(0f, 1f, infiniteRepeatable(tween(if (active) 6000 else 14000, easing = LinearEasing), RepeatMode.Restart)).value
+    } else 0f
     val (source, hovered) = rememberHover()
     Box(
-        modifier.height(220.dp).clip(RoundedCornerShape(28.dp))
-            .background(Brush.linearGradient(listOf(accent.copy(alpha = 0.95f), accent.copy(alpha = 0.55f), Color(0xFF1A1020))))
+        modifier.height(196.dp).clip(RoundedCornerShape(24.dp))
+            .background(Brush.linearGradient(listOf(accent.copy(alpha = 0.95f), accent.copy(alpha = 0.55f), accent.copy(alpha = 0.72f))))
             .hoverable(source).pointerHoverIcon(PointerIcon.Hand)
             .clickable(interactionSource = source, indication = null) { model.playWave() },
     ) {
@@ -165,9 +181,9 @@ private fun WaveCard(model: AriaModel, active: Boolean, modifier: Modifier) {
         }
         Column(Modifier.fillMaxSize().padding(28.dp), verticalArrangement = Arrangement.SpaceBetween) {
             Column {
-                Text("МОЯ ВОЛНА", color = Color.Black.copy(alpha = 0.6f), fontWeight = FontWeight.Black, fontSize = 12.sp, letterSpacing = 2.sp)
+                Text("Моя волна", color = Color.Black.copy(alpha = 0.76f), fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 Text(
-                    if (active) "Звучит сейчас" else "Бесконечный поток под ваш вкус",
+                    if (active) "Звучит сейчас" else "Музыка под ваш вкус",
                     color = Color.Black.copy(alpha = 0.85f),
                     fontWeight = FontWeight.Black,
                     fontSize = 28.sp,
@@ -182,12 +198,7 @@ private fun WaveCard(model: AriaModel, active: Boolean, modifier: Modifier) {
                 ) {
                     if (active) PlayingBars(true, color = accent) else Icon(Icons.Filled.PlayArrow, null, tint = Color.White, modifier = Modifier.size(32.dp))
                 }
-                Text(
-                    "Учится на ваших лайках и пропусках",
-                    color = Color.Black.copy(alpha = 0.65f),
-                    fontSize = 13.sp,
-                    modifier = Modifier.padding(start = 16.dp),
-                )
+
             }
         }
     }
@@ -198,7 +209,7 @@ private fun LikedCard(model: AriaModel, modifier: Modifier) {
     val (source, hovered) = rememberHover()
     val covers = model.liked.mapNotNull { it.coverUrl }.distinct().take(4)
     Box(
-        modifier.height(220.dp).clip(RoundedCornerShape(28.dp))
+        modifier.height(196.dp).clip(RoundedCornerShape(24.dp))
             .background(if (hovered) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surfaceContainerHigh)
             .hoverable(source).pointerHoverIcon(PointerIcon.Hand)
             .clickable(interactionSource = source, indication = null) { model.navigate(Screen.Liked) },

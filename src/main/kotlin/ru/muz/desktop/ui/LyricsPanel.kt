@@ -163,8 +163,8 @@ private fun LyricsLines(model: AriaModel, lyrics: Lyrics, large: Boolean) {
     }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val height = constraints.maxHeight
-        LaunchedEffect(active, height) {
-            if (active < 0) return@LaunchedEffect
+        LaunchedEffect(active, height, model.settings.lyricsAutoScroll) {
+            if (active < 0 || !model.settings.lyricsAutoScroll) return@LaunchedEffect
             val wait = manualUntil - System.currentTimeMillis()
             if (wait > 0) delay(wait)
             val info = state.layoutInfo.visibleItemsInfo.firstOrNull { it.index == active }
@@ -210,7 +210,8 @@ private fun LyricsLines(model: AriaModel, lyrics: Lyrics, large: Boolean) {
                     position = if (index == active) position else 0L,
                     karaoke = model.settings.karaoke,
                     fontSize = fontSize,
-                    onClick = if (lyrics.synced) ({ model.player.seek((line.startMs - model.settings.lyricsOffsetMs).coerceAtLeast(0)) }) else null,
+                    centered = model.settings.centerLyrics,
+                    onClick = if (lyrics.synced && model.settings.lyricsTapToSeek) ({ model.player.seek((line.startMs - model.settings.lyricsOffsetMs).coerceAtLeast(0)) }) else null,
                 )
             }
         }
@@ -226,6 +227,7 @@ private fun LyricLineView(
     position: Long,
     karaoke: Boolean,
     fontSize: Int,
+    centered: Boolean,
     onClick: (() -> Unit)?,
 ) {
     val isActive = synced && index == active
@@ -253,7 +255,7 @@ private fun LyricLineView(
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f)
+                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(if (centered) 0.5f else 0f, 0.5f)
             }
             .clip(RoundedCornerShape(12.dp))
             .background(if (hovered && onClick != null) base.copy(alpha = 0.05f) else Color.Transparent)
@@ -269,7 +271,8 @@ private fun LyricLineView(
             fontSize = fontSize.sp,
             lineHeight = (fontSize * 1.22f).sp,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Start,
+            textAlign = if (centered) TextAlign.Center else TextAlign.Start,
+            modifier = Modifier.fillMaxWidth(),
             onTextLayout = { layout = it },
         )
         if (isActive) {
@@ -279,8 +282,8 @@ private fun LyricLineView(
                 fontSize = fontSize.sp,
                 lineHeight = (fontSize * 1.22f).sp,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Start,
-                modifier = Modifier.drawWithContent {
+                textAlign = if (centered) TextAlign.Center else TextAlign.Start,
+                modifier = Modifier.fillMaxWidth().drawWithContent {
                     val result = layout
                     if (!karaoke || result == null) {
                         drawContent()
