@@ -94,18 +94,6 @@ fun HomePage(model: AriaModel) {
                 }
             }
         }
-        if (model.personal.isNotEmpty()) {
-            item {
-                SectionHeader("Собрано для вас")
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    items(model.personal) { p ->
-                        MediaCard(p.title, p.description.ifBlank { tracksLabel(p.trackCount) }, p.coverUrl, onPlay = { model.playScreen(Screen.Playlist(p)) }) {
-                            model.navigate(Screen.Playlist(p))
-                        }
-                    }
-                }
-            }
-        }
         if (model.playlists.isNotEmpty()) {
             item {
                 SectionHeader("Ваши плейлисты", action = "Все") { model.root(Screen.Collection) }

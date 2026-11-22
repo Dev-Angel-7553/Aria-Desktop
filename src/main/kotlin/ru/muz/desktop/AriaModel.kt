@@ -79,8 +79,6 @@ class AriaModel(val scope: CoroutineScope) {
         private set
     var playlists by mutableStateOf<List<YandexClient.Playlist>>(emptyList())
         private set
-    var personal by mutableStateOf<List<YandexClient.Playlist>>(emptyList())
-        private set
     var albums by mutableStateOf<List<YandexClient.Album>>(emptyList())
         private set
     var chart by mutableStateOf<List<YandexClient.Track>>(emptyList())
@@ -193,7 +191,6 @@ class AriaModel(val scope: CoroutineScope) {
         liked = emptyList()
         likedIds = emptySet()
         playlists = emptyList()
-        personal = emptyList()
         albums = emptyList()
         chart = emptyList()
         pages.clear()
@@ -209,7 +206,6 @@ class AriaModel(val scope: CoroutineScope) {
         scope.launch {
             val likedJob = async { api.likedTracks() }
             val playlistsJob = async { api.playlists() }
-            val personalJob = async { api.personalPlaylists() }
             val albumsJob = async { api.likedAlbums() }
             val chartJob = async { api.chart() }
             likedJob.await().onSuccess {
@@ -218,7 +214,6 @@ class AriaModel(val scope: CoroutineScope) {
                 api.seedTracks(it)
             }.onFailure { libraryError = it.message ?: "Не удалось загрузить коллекцию" }
             playlistsJob.await().onSuccess { playlists = it }
-            personalJob.await().onSuccess { personal = it }
             albumsJob.await().onSuccess { albums = it }
             chartJob.await().onSuccess { chart = it }
             libraryLoading = false
@@ -552,9 +547,6 @@ class AriaModel(val scope: CoroutineScope) {
         likedIds = tracks.take(6).map { it.id }.toSet()
         playlists = (0 until 7).map { i ->
             YandexClient.Playlist("$i", "1", "${3 + i}", "", listOf("В дорогу", "Вечер", "Спокойное", "Для работы", "Тренировка", "Ночь", "Любимое")[i], "", cover(40 + i), 20 + i * 7, "")
-        }
-        personal = (0 until 4).map { i ->
-            YandexClient.Playlist("p$i", "yamusic", "${90 + i}", "", listOf("Плейлист дня", "Дежавю", "Премьера", "Тайник")[i], "Каждый день новое", cover(60 + i), 30, "daily")
         }
         albums = (0 until 6).map { i -> YandexClient.Album("${500 + i}", "Альбом ${i + 1}", names[i].second, cover(80 + i), 10) }
         chart = tracks.reversed()

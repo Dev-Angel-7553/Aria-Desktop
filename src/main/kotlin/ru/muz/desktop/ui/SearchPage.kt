@@ -197,9 +197,6 @@ fun CollectionPage(model: AriaModel) {
                         model.playlists.forEach { p ->
                             MediaCard(p.title, tracksLabel(p.trackCount), p.coverUrl, width = 160.dp, onPlay = { model.playScreen(Screen.Playlist(p)) }) { model.navigate(Screen.Playlist(p)) }
                         }
-                        model.personal.forEach { p ->
-                            MediaCard(p.title, "Подборка Яндекса", p.coverUrl, width = 160.dp, onPlay = { model.playScreen(Screen.Playlist(p)) }) { model.navigate(Screen.Playlist(p)) }
-                        }
                     } else {
                         model.albums.forEach { a ->
                             MediaCard(a.title, a.artist, a.coverUrl, width = 160.dp, onPlay = { model.playScreen(Screen.Album(a)) }) { model.navigate(Screen.Album(a)) }

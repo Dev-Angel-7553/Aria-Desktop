@@ -1,9 +1,6 @@
 package ru.muz.yandex
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -147,27 +144,6 @@ class YandexClient(
             val obj = item.asObject() ?: return@mapNotNull null
             (obj.obj("album") ?: obj).asAlbum()
         }.distinctBy { it.id }
-    }
-
-    suspend fun personalPlaylists(): Result<List<Playlist>> = runCatching {
-        val generated = coroutineScope {
-            PERSONAL_PLAYLISTS.map { type ->
-                async(Dispatchers.IO) {
-                    runCatching {
-                        val generated = apiGet("playlists/personal/$type").resultObject()
-                        generated.generatedPlaylist(source = type)
-                    }.getOrNull()
-                }
-            }.awaitAll().filterNotNull().distinctBy { it.id }
-        }
-        if (generated.isNotEmpty()) return@runCatching generated
-
-        val feed = runCatching { apiGet("feed").resultObject() }.getOrNull()
-        val fromFeed = feed?.array("generatedPlaylists")
-            ?.mapNotNull { it.asObject()?.generatedPlaylist() }
-            .orEmpty()
-            .distinctBy { it.id }
-        if (fromFeed.isNotEmpty()) fromFeed else playlists().getOrThrow()
     }
 
     suspend fun myWave(queue: String? = null): Result<List<Track>> = runCatching {
@@ -612,11 +588,6 @@ class YandexClient(
         )
     }
 
-    private fun JsonObject.generatedPlaylist(source: String = ""): Playlist? {
-        val data = obj("data") ?: obj("playlist") ?: obj("generatedPlaylist")
-        return (data ?: this).asPlaylist(source)
-    }
-
     private fun JsonObject.asAlbum(): Album? {
         val id = string("id") ?: return null
         val title = string("title") ?: return null
@@ -700,14 +671,6 @@ class YandexClient(
         private const val NETWORK_ATTEMPTS = 4
         private const val NETWORK_RETRY_BASE_MS = 500L
         private const val NETWORK_RETRY_MAX_MS = 4_000L
-        private val PERSONAL_PLAYLISTS = listOf(
-            "playlistOfTheDay",
-            "origin",
-            "recentTracks",
-            "neverHeard",
-            "missedLikes",
-            "podcasts",
-        )
         private val sharedHttp = OkHttpClient.Builder().followRedirects(true).followSslRedirects(true).build()
     }
 
