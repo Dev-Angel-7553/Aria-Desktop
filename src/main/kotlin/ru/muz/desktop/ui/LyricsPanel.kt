@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lyrics
 import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,6 +62,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import ru.muz.desktop.AriaModel
 import ru.muz.desktop.LyricsState
 import ru.muz.desktop.SidePanel
@@ -143,7 +146,15 @@ fun LyricsView(model: AriaModel, large: Boolean) {
             "Текста нет",
             model.lyricsStage.ifBlank { "Для этого трека текст не нашёлся" },
         ) {
-            Pill("Поискать ещё раз", Icons.Filled.Refresh) { model.loadLyrics(track, refresh = true) }
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Pill("Поискать ещё раз", Icons.Filled.Refresh) { model.loadLyrics(track, refresh = true) }
+                Pill("Искать в браузере", Icons.Filled.Search) {
+                    val query = "${track.artist} ${track.title} текст песни"
+                    val url = "https://www.google.com/search".toHttpUrl().newBuilder()
+                        .addQueryParameter("q", query).build()
+                    openUrl(url.toString())
+                }
+            }
         }
         else -> LyricsLines(model, model.lyrics!!, large)
     }
