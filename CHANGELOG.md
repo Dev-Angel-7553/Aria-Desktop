@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+- Removed legacy Yandex recommendations from Home and Collection
+- Show, hide, and reorder Home sections
+- Settings grouped into Appearance, Home, Lyrics, Player, and App
+- Custom accent colors, compact track lists, and optional navigation labels
+- Customize the play button, progress bar, and full-screen cover background
+- Center lyrics and choose whether to auto-scroll or seek by clicking a line
+- Search for missing lyrics in the browser
+- Refreshed Home cards and improved their contrast
+
 ## 0.2.2
 
 - Smoother loading animation
