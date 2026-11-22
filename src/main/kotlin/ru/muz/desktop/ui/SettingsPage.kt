@@ -350,7 +350,7 @@ private fun Toggle(title: String, subtitle: String, checked: Boolean, onChange: 
 @Composable
 private fun CustomAccent(accent: Int, onApply: (Int) -> Unit) {
     var input by remember(accent) { mutableStateOf("%06X".format(accent and 0xFFFFFF)) }
-    val rgb = input.trim().removePrefix("#").takeIf { it.length == 6 }?.toIntOrNull(16)
+    val rgb = input.trim().removePrefix("#").takeIf { it.matches(Regex("[0-9A-Fa-f]{6}")) }?.toIntOrNull(16)
     Row(
         Modifier.padding(top = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -390,7 +390,7 @@ private fun HomeSections(model: AriaModel) {
                     model.updateSettings { current ->
                         current.copy(homeSections = if (show) current.homeSections + section else current.homeSections - section)
                     }
-                }, modifier = Modifier.padding(start = 6.dp).then(Modifier.semantics { contentDescription = section.title }))
+                }, modifier = Modifier.padding(start = 6.dp).semantics { contentDescription = section.title })
             }
         }
     }

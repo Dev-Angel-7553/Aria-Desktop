@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
@@ -142,7 +143,9 @@ fun HomePage(model: AriaModel) {
         if (sections.isEmpty()) {
             item {
                 Spacer(Modifier.height(20.dp))
-                Pill("Настроить главную") { model.root(Screen.Settings) }
+                Text("Включите нужные разделы на вкладке «Главная» в настройках.", color = SoftText)
+                Spacer(Modifier.height(10.dp))
+                Pill("Открыть настройки") { model.root(Screen.Settings) }
             }
         }
         if (model.libraryLoading && sections.isNotEmpty() && model.liked.isEmpty()) {
@@ -155,6 +158,8 @@ fun HomePage(model: AriaModel) {
 @Composable
 private fun WaveCard(model: AriaModel, active: Boolean, modifier: Modifier) {
     val accent = Accent
+    val onAccent = MaterialTheme.colorScheme.onPrimary
+    val gradientEnd = lerp(accent, MaterialTheme.colorScheme.primaryContainer, 0.22f)
     val phase = if (model.settings.animateWave) {
         val transition = rememberInfiniteTransition()
         transition.animateFloat(0f, 1f, infiniteRepeatable(tween(if (active) 6000 else 14000, easing = LinearEasing), RepeatMode.Restart)).value
@@ -162,7 +167,7 @@ private fun WaveCard(model: AriaModel, active: Boolean, modifier: Modifier) {
     val (source, hovered) = rememberHover()
     Box(
         modifier.height(196.dp).clip(RoundedCornerShape(24.dp))
-            .background(Brush.linearGradient(listOf(accent.copy(alpha = 0.95f), accent.copy(alpha = 0.55f), accent.copy(alpha = 0.72f))))
+            .background(Brush.linearGradient(listOf(accent, gradientEnd)))
             .hoverable(source).pointerHoverIcon(PointerIcon.Hand)
             .clickable(interactionSource = source, indication = null) { model.playWave() },
     ) {
@@ -173,7 +178,7 @@ private fun WaveCard(model: AriaModel, active: Boolean, modifier: Modifier) {
                 val t = (phase + k * 0.21f) * 2 * PI.toFloat()
                 val center = Offset(w * (0.62f + 0.22f * cos(t + k)), h * (0.5f + 0.32f * sin(t * 1.3f + k)))
                 drawCircle(
-                    Brush.radialGradient(listOf(Color.White.copy(alpha = 0.22f - k * 0.04f), Color.Transparent), center, radius = h * (0.7f + 0.15f * k)),
+                    Brush.radialGradient(listOf(onAccent.copy(alpha = 0.12f - k * 0.025f), Color.Transparent), center, radius = h * (0.7f + 0.15f * k)),
                     radius = h * (0.7f + 0.15f * k),
                     center = center,
                 )
@@ -181,10 +186,10 @@ private fun WaveCard(model: AriaModel, active: Boolean, modifier: Modifier) {
         }
         Column(Modifier.fillMaxSize().padding(28.dp), verticalArrangement = Arrangement.SpaceBetween) {
             Column {
-                Text("Моя волна", color = Color.Black.copy(alpha = 0.76f), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text("Моя волна", color = onAccent, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                 Text(
                     if (active) "Звучит сейчас" else "Музыка под ваш вкус",
-                    color = Color.Black.copy(alpha = 0.85f),
+                    color = onAccent,
                     fontWeight = FontWeight.Black,
                     fontSize = 28.sp,
                     lineHeight = 32.sp,
@@ -193,10 +198,10 @@ private fun WaveCard(model: AriaModel, active: Boolean, modifier: Modifier) {
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    Modifier.size(56.dp).clip(CircleShape).background(Color.Black.copy(alpha = if (hovered) 1f else 0.82f)),
+                    Modifier.size(56.dp).clip(CircleShape).background(onAccent.copy(alpha = if (hovered) 1f else 0.88f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    if (active) PlayingBars(true, color = accent) else Icon(Icons.Filled.PlayArrow, null, tint = Color.White, modifier = Modifier.size(32.dp))
+                    if (active) PlayingBars(true, color = accent) else Icon(Icons.Filled.PlayArrow, null, tint = accent, modifier = Modifier.size(32.dp))
                 }
 
             }
