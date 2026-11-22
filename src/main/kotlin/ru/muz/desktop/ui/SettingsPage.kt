@@ -62,6 +62,8 @@ import ru.muz.desktop.AriaModel
 import ru.muz.desktop.DesktopSettings
 import ru.muz.desktop.DesktopUpdate
 import ru.muz.desktop.HomeSection
+import ru.muz.desktop.PlayShape
+import ru.muz.desktop.SeekStyle
 import ru.muz.desktop.StreamQuality
 import ru.muz.desktop.ThemeMode
 
@@ -176,6 +178,28 @@ fun SettingsPage(model: AriaModel) {
                     Chip("−0,5 с", false) { model.updateSettings { it.copy(lyricsOffsetMs = (it.lyricsOffsetMs - 500).coerceAtLeast(-5000)) } }
                     Chip("Сбросить", s.lyricsOffsetMs == 0) { model.updateSettings { it.copy(lyricsOffsetMs = 0) } }
                     Chip("+0,5 с", false) { model.updateSettings { it.copy(lyricsOffsetMs = (it.lyricsOffsetMs + 500).coerceAtMost(5000)) } }
+                }
+            }
+        }
+        if (category == SettingsCategory.PLAYBACK) item("Оформление плеера") {
+            Section("Оформление плеера") {
+                Label("Кнопка воспроизведения")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    PlayShape.entries.forEach { shape ->
+                        Chip(shape.title, s.playShape == shape) { model.updateSettings { it.copy(playShape = shape) } }
+                    }
+                }
+                Label("Полоса прогресса")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    SeekStyle.entries.forEach { style ->
+                        Chip(style.title, s.seekStyle == style) { model.updateSettings { it.copy(seekStyle = style) } }
+                    }
+                }
+                Toggle("Акцент на кнопке и прогрессе", "", s.accentControls) { value ->
+                    model.updateSettings { it.copy(accentControls = value) }
+                }
+                Toggle("Обложка на фоне", "В полноэкранном плеере", s.playerCoverBackground) { value ->
+                    model.updateSettings { it.copy(playerCoverBackground = value) }
                 }
             }
         }

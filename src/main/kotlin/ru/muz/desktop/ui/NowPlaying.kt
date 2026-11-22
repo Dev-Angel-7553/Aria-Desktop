@@ -50,7 +50,7 @@ fun NowPlaying(model: AriaModel) {
     val s by model.player.state.collectAsState()
     val track = s.current
     var showQueue by remember { mutableStateOf(false) }
-    val background = rememberImage(track?.coverUrl, 300)
+    val background = if (model.settings.playerCoverBackground) rememberImage(track?.coverUrl, 300) else null
     val base = MaterialTheme.colorScheme.background
     Box(Modifier.fillMaxSize().clipToBounds().background(base)) {
         if (background != null) {

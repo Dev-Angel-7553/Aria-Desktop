@@ -42,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -182,7 +183,10 @@ fun ThinSlider(
     buffered: Float = 0f,
     onFinished: (Float) -> Unit = {},
     color: Color = MaterialTheme.colorScheme.onSurface,
+    trackHeight: androidx.compose.ui.unit.Dp = 3.5.dp,
 ) {
+    val changeValue by rememberUpdatedState(onChange)
+    val finishGesture by rememberUpdatedState(onFinished)
     val (source, hovered) = rememberHover()
     var dragging by remember { mutableStateOf(false) }
     var dragValue by remember { mutableFloatStateOf(0f) }
@@ -198,8 +202,8 @@ fun ThinSlider(
             .pointerInput(Unit) {
                 detectTapGestures { offset ->
                     val v = (offset.x / size.width).coerceIn(0f, 1f)
-                    onChange(v)
-                    onFinished(v)
+                    changeValue(v)
+                    finishGesture(v)
                 }
             }
             .pointerInput(Unit) {
@@ -207,20 +211,20 @@ fun ThinSlider(
                     onDragStart = { offset ->
                         dragging = true
                         dragValue = (offset.x / size.width).coerceIn(0f, 1f)
-                        onChange(dragValue)
+                        changeValue(dragValue)
                     },
                     onDragEnd = {
                         dragging = false
-                        onFinished(dragValue)
+                        finishGesture(dragValue)
                     },
                     onDragCancel = { dragging = false },
                 ) { change, _ ->
                     dragValue = (change.position.x / size.width).coerceIn(0f, 1f)
-                    onChange(dragValue)
+                    changeValue(dragValue)
                 }
             },
     ) {
-        val h = if (active) 5.dp.toPx() else 3.5.dp.toPx()
+        val h = (trackHeight + if (active) 1.5.dp else 0.dp).toPx()
         val y = size.height / 2 - h / 2
         val r = CornerRadius(h / 2)
         drawRoundRect(track, Offset(0f, y), Size(size.width, h), r)

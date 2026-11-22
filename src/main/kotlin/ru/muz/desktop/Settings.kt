@@ -22,6 +22,9 @@ enum class HomeSection(val title: String) {
     CHART("Чарт"),
 }
 
+enum class PlayShape(val title: String) { CIRCLE("Круг"), ROUNDED("Скруглённая"), SQUARE("Квадрат") }
+enum class SeekStyle(val title: String, val trackHeight: Float) { LINE("Линия", 3.5f), CAPSULE("Капсула", 7f), HAIRLINE("Тонкая", 2f) }
+
 enum class SidePanel { LYRICS, QUEUE, HIDDEN }
 
 enum class StreamQuality(val title: String) { HIGH("Высокое"), ECONOMY("Экономия трафика") }
@@ -49,6 +52,10 @@ data class DesktopSettings(
     val centerLyrics: Boolean = false,
     val lyricsAutoScroll: Boolean = true,
     val lyricsTapToSeek: Boolean = true,
+    val playShape: PlayShape = PlayShape.CIRCLE,
+    val seekStyle: SeekStyle = SeekStyle.LINE,
+    val accentControls: Boolean = false,
+    val playerCoverBackground: Boolean = true,
     val windowWidth: Int = 1280,
     val windowHeight: Int = 820,
     val windowX: Int = Int.MIN_VALUE,
@@ -103,6 +110,10 @@ class SettingsStore(private val file: File = File(AppDirs.config, "settings.json
             put("centerLyrics", s.centerLyrics)
             put("lyricsAutoScroll", s.lyricsAutoScroll)
             put("lyricsTapToSeek", s.lyricsTapToSeek)
+            put("playShape", s.playShape.name)
+            put("seekStyle", s.seekStyle.name)
+            put("accentControls", s.accentControls)
+            put("playerCoverBackground", s.playerCoverBackground)
             put("windowWidth", s.windowWidth)
             put("windowHeight", s.windowHeight)
             put("windowX", s.windowX)
@@ -142,6 +153,10 @@ class SettingsStore(private val file: File = File(AppDirs.config, "settings.json
                 centerLyrics = bool("centerLyrics", d.centerLyrics),
                 lyricsAutoScroll = bool("lyricsAutoScroll", d.lyricsAutoScroll),
                 lyricsTapToSeek = bool("lyricsTapToSeek", d.lyricsTapToSeek),
+                playShape = PlayShape.entries.firstOrNull { it.name == text("playShape") } ?: d.playShape,
+                seekStyle = SeekStyle.entries.firstOrNull { it.name == text("seekStyle") } ?: d.seekStyle,
+                accentControls = bool("accentControls", d.accentControls),
+                playerCoverBackground = bool("playerCoverBackground", d.playerCoverBackground),
                 windowWidth = int("windowWidth", d.windowWidth).coerceAtLeast(640),
                 windowHeight = int("windowHeight", d.windowHeight).coerceAtLeast(480),
                 windowX = int("windowX", d.windowX),

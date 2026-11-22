@@ -10,7 +10,13 @@ import org.junit.Test
 class DesktopLogicTest {
     @Test
     fun settingsRoundTrip() {
-        val original = DesktopSettings(theme = ThemeMode.AMOLED, accent = 0xFF77B8FF.toInt(), volume = 0.35f, lyricsSize = 30, sidePanel = SidePanel.QUEUE, uiScale = 125)
+        val original = DesktopSettings(
+            theme = ThemeMode.AMOLED, accent = 0xFF77B8FF.toInt(), volume = 0.35f, lyricsSize = 30,
+            sidePanel = SidePanel.QUEUE, uiScale = 125, homeSections = listOf(HomeSection.ALBUMS, HomeSection.PLAYLISTS),
+            compactLists = true, showNavigationLabels = false, animateWave = false, centerLyrics = true,
+            lyricsAutoScroll = false, lyricsTapToSeek = false, playShape = PlayShape.SQUARE, seekStyle = SeekStyle.CAPSULE,
+            accentControls = true, playerCoverBackground = false,
+        )
         assertEquals(original, SettingsStore.decode(SettingsStore.encode(original)))
     }
 
@@ -18,6 +24,12 @@ class DesktopLogicTest {
     fun brokenSettingsFallBackToDefaults() {
         val decoded = SettingsStore.decode(JsonObject(emptyMap()))
         assertEquals(DesktopSettings(), decoded)
+    }
+
+    @Test
+    fun allHomeSectionsCanBeHidden() {
+        val settings = DesktopSettings(homeSections = emptyList())
+        assertEquals(settings, SettingsStore.decode(SettingsStore.encode(settings)))
     }
 
     @Test

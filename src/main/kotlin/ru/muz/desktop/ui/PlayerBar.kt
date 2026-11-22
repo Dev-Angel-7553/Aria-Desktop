@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.muz.desktop.AriaModel
+import ru.muz.desktop.PlayShape
 import ru.muz.desktop.PlayerSnapshot
 import ru.muz.desktop.RepeatMode
 import ru.muz.desktop.SidePanel
@@ -129,7 +131,10 @@ fun Transport(model: AriaModel, s: PlayerSnapshot, modifier: Modifier = Modifier
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(if (large) 18.dp else 8.dp)) {
             RoundIcon(Icons.Filled.Shuffle, "Перемешать", active = s.shuffle, size = if (large) 44.dp else 34.dp) { player.toggleShuffle() }
             RoundIcon(Icons.Filled.SkipPrevious, "Назад (Ctrl+←)", size = if (large) 52.dp else 38.dp, enabled = s.current != null) { player.previous() }
-            PlayButton(s.isPlaying, s.isLoading, if (large) 68.dp else 42.dp, enabled = s.current != null) { player.toggle() }
+            PlayButton(
+                s.isPlaying, s.isLoading, if (large) 68.dp else 42.dp,
+                enabled = s.current != null, shape = model.settings.playShape, accentControls = model.settings.accentControls,
+            ) { player.toggle() }
             RoundIcon(Icons.Filled.SkipNext, "Вперёд (Ctrl+→)", size = if (large) 52.dp else 38.dp, enabled = s.current != null && s.hasNext) { player.next() }
             RoundIcon(
                 if (s.repeat == RepeatMode.ONE) Icons.Filled.RepeatOne else Icons.Filled.Repeat,
@@ -147,6 +152,8 @@ fun Transport(model: AriaModel, s: PlayerSnapshot, modifier: Modifier = Modifier
             ThinSlider(
                 value = (position.toFloat() / duration).coerceIn(0f, 1f),
                 buffered = s.buffered,
+                trackHeight = model.settings.seekStyle.trackHeight.dp,
+                color = if (model.settings.accentControls) Accent else MaterialTheme.colorScheme.onSurface,
                 onChange = {
                     seeking = true
                     seekValue = it
@@ -166,12 +173,27 @@ fun Transport(model: AriaModel, s: PlayerSnapshot, modifier: Modifier = Modifier
 }
 
 @Composable
-fun PlayButton(playing: Boolean, loading: Boolean, size: androidx.compose.ui.unit.Dp, enabled: Boolean = true, onClick: () -> Unit) {
+private fun PlayButton(
+    playing: Boolean,
+    loading: Boolean,
+    size: androidx.compose.ui.unit.Dp,
+    enabled: Boolean,
+    shape: PlayShape,
+    accentControls: Boolean,
+    onClick: () -> Unit,
+) {
     val (source, hovered) = rememberHover()
+    val accentButton = enabled && (hovered || accentControls)
+    val colors = MaterialTheme.colorScheme
+    val buttonShape = when (shape) {
+        PlayShape.CIRCLE -> CircleShape
+        PlayShape.ROUNDED -> RoundedCornerShape(28)
+        PlayShape.SQUARE -> RoundedCornerShape(8)
+    }
     Tip(if (playing) "Пауза (пробел)" else "Играть (пробел)") {
         Box(
-            Modifier.size(size).clip(CircleShape)
-                .background(if (!enabled) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f) else if (hovered) Accent else MaterialTheme.colorScheme.onSurface)
+            Modifier.size(size).clip(buttonShape)
+                .background(if (!enabled) colors.onSurface.copy(alpha = 0.3f) else if (accentButton) Accent else colors.onSurface)
                 .hoverable(source)
                 .pointerHoverIcon(PointerIcon.Hand)
                 .clickable(enabled = enabled, interactionSource = source, indication = null, onClick = onClick),
@@ -180,13 +202,13 @@ fun PlayButton(playing: Boolean, loading: Boolean, size: androidx.compose.ui.uni
             Icon(
                 if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                 null,
-                tint = MaterialTheme.colorScheme.surface,
+                tint = if (accentButton) colors.onPrimary else colors.surface,
                 modifier = Modifier.size(size * 0.56f),
             )
             if (loading) {
                 androidx.compose.material3.CircularProgressIndicator(
-                    modifier = Modifier.size(size),
-                    color = Accent,
+                    modifier = Modifier.size(size * 0.8f),
+                    color = if (accentButton) colors.onPrimary else Accent,
                     strokeWidth = 2.dp,
                 )
             }
